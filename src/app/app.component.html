@@ -1,90 +1,93 @@
 <div class="container">
-  <div class="col-md-12">
-    <h1>
-      <button (click)="nuevaTarea()" class="btn btn-info pull-right">Nueva tarea</button>
-      Tasker
-    </h1>
-    <hr>
-  </div>
-
-  <div class="col-md-12">
-    <input type="text" [(ngModel)]="palabraBuscar" class="form-control">
-    <br>
-    <div class="list-group">
-      <a *ngFor="let tarea of tareas | async | filtroListado:palabraBuscar" (click)="seleccionarTarea(tarea)" href="#" class="list-group-item">
-        <!--<button class="btn btn-xs btn-info">Archivar</button>-->
-        <div class="btn-group" role="group" aria-label="...">
-          <button type="button"
-                  class="btn btn-xs"
-                  [ngClass]="tarea.estatus =='cancelada' ? 'btn-danger' : '' "
-                  (click)="cambiarEstatus('cancelada',tarea)">
-            <i class="glyphicon glyphicon-remove"></i>
-          </button>
-          <button type="button"
-                  class="btn btn-xs"
-                  [ngClass]="tarea.estatus =='pendiente' ? 'btn-warning' : '' "
-                  (click)="cambiarEstatus('pendiente',tarea)">
-            <i class="glyphicon glyphicon-time"></i>
-          </button>
-          <button type="button"
-                  class="btn btn-xs"
-                  [ngClass]="tarea.estatus =='completada' ? 'btn-success' : '' "
-                  (click)="cambiarEstatus('completada',tarea)">
-            <i class="glyphicon glyphicon-ok"></i>
-          </button>
-        </div>
-
-        <strong class="list-group-item-heading"
-                (click)="verContenido(tarea)">
-          {{tarea.titulo}}
-        </strong>
-
-        <div *ngIf="tarea.verContenido" style="padding-left: 74px;">
-          <div *ngIf="!tarea.editar">
-            <span [innerHTML]="tarea.contenido" (click)="tarea.editar = true"></span>
-          </div>
-          <div *ngIf="tarea.editar">
-            <textarea class="form-control" [(ngModel)]="tarea.contenido" (change)="tarea.editar = false;actualizarContenido(tarea)" (blur)="tarea.editar=false"></textarea>
-          </div>
-        </div>
-
-
-        <!--<p class="list-group-item-text">
-          <span *ngFor="let tag of tarea.tags">{{tag}} | </span>
-        </p>-->
-
-      </a>
+    <div class="col-md-12">
+        <h1>
+            <button (click)="nuevaTarea()" class="btn btn-info pull-right">Nueva tarea</button>
+            Tasker
+        </h1>
+        <hr>
     </div>
-  </div>
 
-  <!--<div class="col-md-6">
-    <div class="panel panel-info" *ngIf="tareaSeleccionada">
-      <div class="panel-heading">
-        <div class="btn-group pull-right" role="group" aria-label="...">
-          <button type="button" class="btn btn-danger btn-xs" (click)="cambiarEstatus('cancelada')">Cancelada</button>
-          <button type="button" class="btn btn-warning btn-xs" (click)="cambiarEstatus('pendiente')">Pendiente</button>
-          <button type="button" class="btn btn-success btn-xs" (click)="cambiarEstatus('completa')">Completada</button>
+    <div class="col-md-12">
+        <input type="text" [(ngModel)]="palabraBuscar" class="form-control">
+        <br>
+        <div class="list-group">
+            <a *ngFor="let tarea of tareas | async | filtroListado:palabraBuscar" (click)="seleccionarTarea(tarea)"
+               href="#" class="list-group-item">
+                <!--<button class="btn btn-xs btn-info">Archivar</button>-->
+                <div class="btn-group" role="group" aria-label="...">
+                    <button type="button"
+                            class="btn btn-xs"
+                            [ngClass]="tarea.estatus =='cancelada' ? 'btn-danger' : '' "
+                            (click)="cambiarEstatus('cancelada',tarea)">
+                        <i class="glyphicon glyphicon-remove"></i>
+                    </button>
+                    <button type="button"
+                            class="btn btn-xs"
+                            [ngClass]="tarea.estatus =='pendiente' ? 'btn-warning' : '' "
+                            (click)="cambiarEstatus('pendiente',tarea)">
+                        <i class="glyphicon glyphicon-time"></i>
+                    </button>
+                    <button type="button"
+                            class="btn btn-xs"
+                            [ngClass]="tarea.estatus =='completada' ? 'btn-success' : '' "
+                            (click)="cambiarEstatus('completada',tarea)">
+                        <i class="glyphicon glyphicon-ok"></i>
+                    </button>
+                </div>
+
+                <strong class="list-group-item-heading"
+                        (click)="verContenido(tarea)">
+                    {{tarea.titulo}}
+                </strong>
+
+                <div *ngIf="tarea.verContenido" style="padding-left: 74px;">
+                    <div *ngIf="!tarea.editar">
+                        <span [innerHTML]="tarea.contenido" (click)="tarea.editar = true"></span>
+                    </div>
+                    <div *ngIf="tarea.editar">
+                        <textarea class="form-control" [(ngModel)]="tarea.contenido"
+                                  (change)="tarea.editar = false;actualizarContenido(tarea)"
+                                  (blur)="tarea.editar=false"></textarea>
+                    </div>
+                </div>
+
+
+                <!--<p class="list-group-item-text">
+                  <span *ngFor="let tag of tarea.tags">{{tag}} | </span>
+                </p>-->
+
+            </a>
         </div>
-        <h3 class="panel-title">
-          <strong>{{tareaSeleccionada.fecha}}</strong>
-          | <span>{{tareaSeleccionada.estatus}}</span>
-        </h3>
-      </div>
-      <div class="panel-body">
-
-        {{tareaSeleccionada.titulo}}
-        <br>
-        <br>
-        <textarea [(ngModel)]="tareaSeleccionada.contenido"
-                  (change)="actualizarTareaSeleccionada()"
-                  class="form-control"
-                  style="border: none;padding: 0;" >
-        </textarea>
-        <br>
-        <span>{{tareaSeleccionada.estatus}}</span>
-        <br>
-        <span *ngFor="let tag of tareaSeleccionada.tags">{{tag}} | </span>
-      </div>
     </div>
-  </div>-->
+
+    <!--<div class="col-md-6">
+      <div class="panel panel-info" *ngIf="tareaSeleccionada">
+        <div class="panel-heading">
+          <div class="btn-group pull-right" role="group" aria-label="...">
+            <button type="button" class="btn btn-danger btn-xs" (click)="cambiarEstatus('cancelada')">Cancelada</button>
+            <button type="button" class="btn btn-warning btn-xs" (click)="cambiarEstatus('pendiente')">Pendiente</button>
+            <button type="button" class="btn btn-success btn-xs" (click)="cambiarEstatus('completa')">Completada</button>
+          </div>
+          <h3 class="panel-title">
+            <strong>{{tareaSeleccionada.fecha}}</strong>
+            | <span>{{tareaSeleccionada.estatus}}</span>
+          </h3>
+        </div>
+        <div class="panel-body">
+
+          {{tareaSeleccionada.titulo}}
+          <br>
+          <br>
+          <textarea [(ngModel)]="tareaSeleccionada.contenido"
+                    (change)="actualizarTareaSeleccionada()"
+                    class="form-control"
+                    style="border: none;padding: 0;" >
+          </textarea>
+          <br>
+          <span>{{tareaSeleccionada.estatus}}</span>
+          <br>
+          <span *ngFor="let tag of tareaSeleccionada.tags">{{tag}} | </span>
+        </div>
+      </div>
+    </div>-->
 </div>
