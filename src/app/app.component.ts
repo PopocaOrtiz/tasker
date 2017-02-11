@@ -1,5 +1,5 @@
 import { Component , Pipe , Injectable , PipeTransform } from '@angular/core';
-import { AngularFire } from 'angularfire2'
+import { AngularFire, FirebaseListObservable } from 'angularfire2'
 type estatusTarea = 'pendiente' | 'completa' | 'cancelada' | 'espera';
 
 export interface ITarea{
@@ -34,25 +34,13 @@ export class FiltroListadoPipe implements PipeTransform {
 })
 export class AppComponent {
 
-  tareas : ITarea[] = [
-    {
-      fecha : 'hoy',
-      titulo : "Prueba de tarea",
-      contenido : "Contenido de la tarea 1",
-      estatus : "pendiente",
-      tags : []
-    },
-    {
-      fecha: 'hoy',
-      titulo: "Prueba de tarea",
-      contenido: "Contenido de la tarea 2",
-      estatus: "pendiente",
-      tags: []
-    }
-  ];
+  tareas : FirebaseListObservable<ITarea[]>;
 
   tareaSeleccionada : ITarea;
 
+  constructor(af : AngularFire){
+      this.tareas = af.database.list("/tareas");
+  }
   nuevaTarea(){
     let titulo = "";
     if(titulo = prompt("Nombre")){
