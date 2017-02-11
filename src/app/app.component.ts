@@ -44,8 +44,36 @@ export class AppComponent {
 
     tareaSeleccionada: ITarea;
 
-    constructor(af: AngularFire) {
-        this.tareas = af.database.list("/tareas");
+    constructor(private af: AngularFire) {
+
+        this.af.auth.subscribe(user => {
+            if(user) {
+                // user logged in
+                this.user = user;
+                this.tareas = this.af.database.list("/tareas",{
+                    query: {
+                        orderByChild: 'carpeta',
+                        equalTo: 'inbox'
+                    }
+                });
+                console.log(user);
+            }
+            else {
+                // user not logged in
+                this.user = {};
+            }
+        });
+    }
+
+    login() {
+        this.af.auth.login({
+            provider: AuthProviders.Google,
+            method: AuthMethods.Popup
+        });
+    }
+
+    logout() {
+        this.af.auth.logout();
     }
 
     nuevaTarea() {

@@ -1,5 +1,11 @@
 <div class="container">
     <div class="col-md-12">
+        <div class="pull-right" style="margin: 30px 0px 0px 10px;">
+            <strong class="text-primary cp" (click)="login()" *ngIf="!user.google">Login</strong>
+            <strong *ngIf="user.google">
+                {{user.google.displayName}}(<span class="text-primary cp" (click)="logout()">Salir</span>)
+            </strong>
+        </div>
         <h1>
             <button (click)="nuevaTarea()" class="btn btn-info pull-right">Nueva tarea</button>
             Tasker
