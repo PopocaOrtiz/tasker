@@ -3,12 +3,14 @@ import {AngularFire, FirebaseListObservable} from 'angularfire2'
 type estatusTarea = 'pendiente' | 'completa' | 'cancelada' | 'espera';
 
 export interface ITarea {
+    $key ?:any
     fecha: string
     titulo: string
     contenido: string
     estatus: estatusTarea
     tags: string[]
     fechaCompletada ?: string
+    verContenido ?: boolean
 }
 
 @Pipe({
@@ -18,6 +20,9 @@ export interface ITarea {
 @Injectable()
 export class FiltroListadoPipe implements PipeTransform {
     transform(items: any[], palabra: string): any {
+        if(items==null){
+            return null;
+        }
         return items.filter(item => {
             if (!palabra)
                 return true;
@@ -59,10 +64,37 @@ export class AppComponent {
         this.tareaSeleccionada = tarea;
     }
 
-    cambiarEstatus(estatus: estatusTarea) {
-        this.tareaSeleccionada.estatus = estatus;
+    cambiarEstatus(estatus: estatusTarea, tarea : ITarea) {
+
+        let nuevaInfo : any = {
+            estatus : estatus
+        };
+
+        tarea.estatus = estatus;
+
         if (estatus == 'completa') {
-            this.tareaSeleccionada.fechaCompletada = "Hoy";
+            tarea.fechaCompletada = "Hoy";
+            nuevaInfo.fechaCompletada = "Hoy";
         }
+
+        this.tareas.update(tarea.$key,nuevaInfo);
+    }
+
+    actualizarContenido(tarea : ITarea){
+        let nuevoContenido = {
+            contenido:tarea.contenido
+        };
+        this.tareas.update(tarea.$key,nuevoContenido);
+    }
+
+    verContenido(tarea : ITarea){
+
+        if (typeof tarea.verContenido == 'undefined') {
+            tarea.verContenido = true;
+            return;
+        }
+
+        tarea.verContenido = !tarea.verContenido;
+
     }
 }
