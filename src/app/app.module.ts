@@ -5,9 +5,11 @@ import { HttpModule } from '@angular/http';
 
 import { AppComponent } from './app.component';
 
+import { FiltroListadoPipe } from './app.component'
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    FiltroListadoPipe
   ],
   imports: [
     BrowserModule,

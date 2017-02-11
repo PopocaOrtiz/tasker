@@ -1,3 +1,51 @@
-<h1>
-  {{title}}
-</h1>
+<div class="container">
+  <div class="col-md-12">
+    <h1>
+      <button (click)="nuevaTarea()" class="btn btn-info pull-right">Nueva tarea</button>
+      Tasker
+    </h1>
+    <hr>
+  </div>
+
+  <div class="col-md-6">
+    <input type="text" [(ngModel)]="palabraBuscar" class="form-control">
+    <br>
+    <div class="list-group">
+      <a *ngFor="let tarea of tareas | filtroListado:palabraBuscar" (click)="seleccionarTarea(tarea)" href="#" class="list-group-item">
+        <h4 class="list-group-item-heading">{{tarea.titulo}}</h4>
+        <p class="list-group-item-text">
+          {{tarea.estatus}} |
+          <span *ngFor="let tag of tarea.tags">{{tag}} | </span>
+        </p>
+      </a>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="panel panel-info" *ngIf="tareaSeleccionada">
+      <div class="panel-heading">
+        <div class="btn-group pull-right" role="group" aria-label="...">
+          <button type="button" class="btn btn-danger btn-xs" (click)="cambiarEstatus('cancelada')">Cancelada</button>
+          <button type="button" class="btn btn-warning btn-xs" (click)="cambiarEstatus('pendiente')">Pendiente</button>
+          <button type="button" class="btn btn-success btn-xs" (click)="cambiarEstatus('completa')">Completada</button>
+        </div>
+        <h3 class="panel-title">
+          <strong>{{tareaSeleccionada.fecha}}</strong>
+          | <span>{{tareaSeleccionada.estatus}}</span>
+        </h3>
+      </div>
+      <div class="panel-body">
+
+
+
+        {{tareaSeleccionada.titulo}}
+        <br>
+        {{tareaSeleccionada.contenido}}
+        <br>
+        <span>{{tareaSeleccionada.estatus}}</span>
+        <br>
+        <span *ngFor="let tag of tareaSeleccionada.tags">{{tag}} | </span>
+      </div>
+    </div>
+  </div>
+</div>
