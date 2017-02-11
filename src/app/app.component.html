@@ -13,7 +13,15 @@
         <div class="list-group">
             <a *ngFor="let tarea of tareas | async | filtroListado:palabraBuscar" (click)="seleccionarTarea(tarea)"
                href="#" class="list-group-item">
-                <!--<button class="btn btn-xs btn-info">Archivar</button>-->
+                <div class="pull-right">
+                    <button class="btn btn-xs btn-info"
+                            (click)="cambiarCarpeta('archivada',tarea)"
+                            *ngIf="tarea.carpeta!='archivada'">Archivar</button>
+                    <button class="btn btn-xs btn-warning"
+                            (click)="cambiarCarpeta('inbox',tarea)"
+                            *ngIf="tarea.carpeta=='archivada'">Pasar a Inbox</button>
+                </div>
+
                 <div class="btn-group" role="group" aria-label="...">
                     <button type="button"
                             class="btn btn-xs"

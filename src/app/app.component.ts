@@ -11,6 +11,7 @@ export interface ITarea {
     tags: string[]
     fechaCompletada ?: string
     verContenido ?: boolean
+    carpeta : string
 }
 
 @Pipe({
@@ -55,14 +56,15 @@ export class AppComponent {
                 titulo: titulo,
                 contenido: "",
                 estatus: "pendiente",
+                carpeta : "inbox",
                 tags: []
             });
         }
     }
 
-    seleccionarTarea(tarea: ITarea) {
+    /*seleccionarTarea(tarea: ITarea) {
         this.tareaSeleccionada = tarea;
-    }
+    }*/
 
     cambiarEstatus(estatus: estatusTarea, tarea : ITarea) {
 
@@ -96,5 +98,13 @@ export class AppComponent {
 
         tarea.verContenido = !tarea.verContenido;
 
+    }
+
+    cambiarCarpeta(carpeta : string,tarea : ITarea){
+        let actualizar = {
+            carpeta:carpeta
+        };
+        this.tareas.update(tarea.$key,actualizar);
+        tarea.carpeta = carpeta;
     }
 }
