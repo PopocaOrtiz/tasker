@@ -1,5 +1,5 @@
 import {Component, Pipe, Injectable, PipeTransform} from '@angular/core';
-import {AngularFire, FirebaseListObservable} from 'angularfire2'
+import {AngularFire, FirebaseListObservable, AuthProviders, AuthMethods} from 'angularfire2'
 type estatusTarea = 'pendiente' | 'completa' | 'cancelada' | 'espera';
 
 export interface ITarea {
@@ -41,6 +41,8 @@ export class FiltroListadoPipe implements PipeTransform {
 export class AppComponent {
 
     tareas: FirebaseListObservable<ITarea[]>;
+    palabraBuscar : string;
+    user = {};
 
     tareaSeleccionada: ITarea;
 
@@ -77,17 +79,15 @@ export class AppComponent {
     }
 
     nuevaTarea() {
-        let titulo = "";
-        if (titulo = prompt("Nombre")) {
-            this.tareas.push({
-                fecha: 'hoy',
-                titulo: titulo,
-                contenido: "",
-                estatus: "pendiente",
-                carpeta : "inbox",
-                tags: []
-            });
-        }
+        this.tareas.push({
+            fecha: 'hoy',
+            titulo: this.palabraBuscar,
+            contenido: "",
+            estatus: "pendiente",
+            carpeta : "inbox",
+            tags: []
+        });
+        this.palabraBuscar = "";
     }
 
     /*seleccionarTarea(tarea: ITarea) {
@@ -112,7 +112,8 @@ export class AppComponent {
 
     actualizarContenido(tarea : ITarea){
         let nuevoContenido = {
-            contenido:tarea.contenido
+            contenido : tarea.contenido,
+            verContenido : true
         };
         this.tareas.update(tarea.$key,nuevoContenido);
     }

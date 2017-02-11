@@ -7,17 +7,19 @@
             </strong>
         </div>
         <h1>
-            <button (click)="nuevaTarea()" class="btn btn-info pull-right">Nueva tarea</button>
             Tasker
         </h1>
         <hr>
     </div>
 
     <div class="col-md-12">
-        <input type="text" [(ngModel)]="palabraBuscar" class="form-control">
+        <div class="input-group">
+            <input type="text" class="form-control" [(ngModel)]="palabraBuscar" (keyup.enter)="nuevaTarea()">
+            <span class="input-group-addon btn btn-info" id="basic-addon2">Buscar</span>
+        </div>
         <br>
         <div class="list-group">
-            <a *ngFor="let tarea of tareas | async | filtroListado:palabraBuscar" (click)="seleccionarTarea(tarea)"
+            <div *ngFor="let tarea of tareas | async | filtroListado:palabraBuscar"
                href="#" class="list-group-item">
                 <div class="pull-right">
                     <button class="btn btn-xs btn-info"
@@ -70,7 +72,7 @@
                   <span *ngFor="let tag of tarea.tags">{{tag}} | </span>
                 </p>-->
 
-            </a>
+            </div>
         </div>
     </div>
 
