@@ -45,6 +45,7 @@ export class AppComponent {
     user = {};
 
     tareaSeleccionada: ITarea;
+    carpetaSeleccionada : string;
 
     constructor(private af: AngularFire) {
 
@@ -64,6 +65,8 @@ export class AppComponent {
                 this.user = {};
             }
         });
+
+        this.carpetaSeleccionada = "inbox";
     }
 
     login() {
@@ -81,7 +84,7 @@ export class AppComponent {
         this.tareas.push({
             fecha: 'hoy',
             titulo: this.palabraBuscar,
-            contenido: "",
+            contenido: "Contenido de la tarea",
             estatus: "pendiente",
             carpeta : "inbox",
             tags: []
@@ -134,6 +137,20 @@ export class AppComponent {
         };
         this.tareas.update(tarea.$key,actualizar);
         // tarea.carpeta = carpeta;
+    }
+    verCarpeta(carpeta : string){
+        if (carpeta=='inbox') {
+            this.carpetaSeleccionada = 'inbox';
+            this.tareas = this.af.database.list("/tareas",{
+                query: {
+                    orderByChild: 'carpeta',
+                    equalTo: 'inbox'
+                }
+            });
+        } else {
+            this.carpetaSeleccionada = 'todas';
+            this.tareas = this.af.database.list("/tareas");
+        }
     }
 
     eliminarTarea(tarea : ITarea){

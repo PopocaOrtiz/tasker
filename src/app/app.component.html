@@ -12,14 +12,15 @@
             </h1>
             <hr>
         </div>
-        <div class="col-md-2">
+        <div class="col-md-2 text-right" id="menu">
             <nav class="bs-docs-sidebar hidden-print hidden-sm hidden-xs affix-top" style="margin-top: 55px;border-bottom: 1px solid silver;">
                 <ul class="nav bs-docs-sidenav">
-                    <li class="">
-                        
+                    <li [ngClass]="carpetaSeleccionada == 'inbox' ? 'active' : ''" (click)="verCarpeta('inbox')">
+                        <!--<span class="badge pull-right" style="margin-top: 12px;">4</span>-->
                         <a href="#inbox">Inbox</a>
                     </li>
-                    <li class="">
+                    <li [ngClass]="carpetaSeleccionada == 'todas' ? 'active' : ''" (click)="verCarpeta('todas')">
+                        <!--<span class="badge pull-right" style="margin-top: 12px;">10</span>-->
                         <a href="#todas">Todas</a>
                     </li>
                 </ul>
