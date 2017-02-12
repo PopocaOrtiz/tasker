@@ -1,77 +1,100 @@
 <div class="container">
-    <div class="col-md-12">
-        <div class="pull-right" style="margin: 30px 0px 0px 10px;">
-            <strong class="text-primary cp" (click)="login()" *ngIf="!user.google">Login</strong>
-            <strong *ngIf="user.google">
-                {{user.google.displayName}}(<span class="text-primary cp" (click)="logout()">Salir</span>)
-            </strong>
-        </div>
-        <h1>
-            Tasker
-        </h1>
-        <hr>
-    </div>
-
-    <div class="col-md-12">
-        <div class="input-group">
-            <input type="text" class="form-control" [(ngModel)]="palabraBuscar" (keyup.enter)="nuevaTarea()">
-            <span class="input-group-addon btn btn-info" id="basic-addon2">Buscar</span>
-        </div>
-        <br>
-        <div class="list-group">
-            <div *ngFor="let tarea of tareas | async | filtroListado:palabraBuscar"
-               href="#" class="list-group-item">
-                <div class="pull-right">
-                    <button class="btn btn-xs btn-info"
-                            (click)="cambiarCarpeta('archivada',tarea)"
-                            *ngIf="tarea.carpeta!='archivada'">Archivar</button>
-                    <button class="btn btn-xs btn-warning"
-                            (click)="cambiarCarpeta('inbox',tarea)"
-                            *ngIf="tarea.carpeta=='archivada'">Pasar a Inbox</button>
-                </div>
-
-                <div class="btn-group" role="group" aria-label="...">
-                    <button type="button"
-                            class="btn btn-xs"
-                            [ngClass]="tarea.estatus =='cancelada' ? 'btn-danger' : '' "
-                            (click)="cambiarEstatus('cancelada',tarea)">
-                        <i class="glyphicon glyphicon-remove"></i>
-                    </button>
-                    <button type="button"
-                            class="btn btn-xs"
-                            [ngClass]="tarea.estatus =='pendiente' ? 'btn-warning' : '' "
-                            (click)="cambiarEstatus('pendiente',tarea)">
-                        <i class="glyphicon glyphicon-time"></i>
-                    </button>
-                    <button type="button"
-                            class="btn btn-xs"
-                            [ngClass]="tarea.estatus =='completada' ? 'btn-success' : '' "
-                            (click)="cambiarEstatus('completada',tarea)">
-                        <i class="glyphicon glyphicon-ok"></i>
-                    </button>
-                </div>
-
-                <strong class="list-group-item-heading"
-                        (click)="verContenido(tarea)">
-                    {{tarea.titulo}}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="pull-right" style="margin: 30px 0px 0px 10px;">
+                <strong class="text-primary cp" (click)="login()" *ngIf="!user.google">Login</strong>
+                <strong *ngIf="user.google">
+                    {{user.google.displayName}}(<span class="text-primary cp" (click)="logout()">Salir</span>)
                 </strong>
-
-                <div *ngIf="tarea.verContenido" style="padding-left: 74px;">
-                    <div *ngIf="!tarea.editar">
-                        <span [innerHTML]="tarea.contenido" (click)="tarea.editar = true"></span>
+            </div>
+            <h1>
+                Tasker
+            </h1>
+            <hr>
+        </div>
+        <div class="col-md-2">
+            <nav class="bs-docs-sidebar hidden-print hidden-sm hidden-xs affix-top" style="margin-top: 55px;border-bottom: 1px solid silver;">
+                <ul class="nav bs-docs-sidenav">
+                    <li class="">
+                        
+                        <a href="#inbox">Inbox</a>
+                    </li>
+                    <li class="">
+                        <a href="#todas">Todas</a>
+                    </li>
+                </ul>
+            </nav>
+            <nav class="bs-docs-sidebar hidden-print hidden-sm hidden-xs affix-top">
+                <ul class="nav bs-docs-sidenav">
+                    <li class="">
+                        <a href="#personas">Personas</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        <div class="col-md-10">
+            <div class="input-group">
+                <input type="text" class="form-control" [(ngModel)]="palabraBuscar" (keyup.enter)="nuevaTarea()">
+                <span class="input-group-addon btn btn-info" id="basic-addon2">Buscar</span>
+            </div>
+            <br>
+            <div class="list-group">
+                <div *ngFor="let tarea of tareas | async | filtroListado:palabraBuscar"
+                     href="#" class="list-group-item">
+                    <div class="pull-right">
+                        <button class="btn btn-xs btn-danger"
+                                (click)="eliminarTarea(tarea)">Eliminar</button>
+                        <button class="btn btn-xs btn-info"
+                                (click)="cambiarCarpeta('archivada',tarea)"
+                                *ngIf="tarea.carpeta!='archivada'">Archivar</button>
+                        <button class="btn btn-xs btn-warning"
+                                (click)="cambiarCarpeta('inbox',tarea)"
+                                *ngIf="tarea.carpeta=='archivada'">Pasar a Inbox</button>
                     </div>
-                    <div *ngIf="tarea.editar">
+
+                    <div class="btn-group" role="group" aria-label="...">
+                        <button type="button"
+                                class="btn btn-xs"
+                                [ngClass]="tarea.estatus =='cancelada' ? 'btn-danger' : '' "
+                                (click)="cambiarEstatus('cancelada',tarea)">
+                            <i class="glyphicon glyphicon-remove"></i>
+                        </button>
+                        <button type="button"
+                                class="btn btn-xs"
+                                [ngClass]="tarea.estatus =='pendiente' ? 'btn-warning' : '' "
+                                (click)="cambiarEstatus('pendiente',tarea)">
+                            <i class="glyphicon glyphicon-time"></i>
+                        </button>
+                        <button type="button"
+                                class="btn btn-xs"
+                                [ngClass]="tarea.estatus =='completada' ? 'btn-success' : '' "
+                                (click)="cambiarEstatus('completada',tarea)">
+                            <i class="glyphicon glyphicon-ok"></i>
+                        </button>
+                    </div>
+
+                    <strong class="list-group-item-heading"
+                            (click)="verContenido(tarea)">
+                        {{tarea.titulo}}
+                    </strong>
+
+                    <div *ngIf="tarea.verContenido" style="padding-left: 74px;">
+                        <div *ngIf="!tarea.editar">
+                            <span [innerHTML]="tarea.contenido" (click)="tarea.editar = true"></span>
+                        </div>
+                        <div *ngIf="tarea.editar">
                         <textarea class="form-control" [(ngModel)]="tarea.contenido"
                                   (change)="tarea.editar = false;actualizarContenido(tarea)"
                                   (blur)="tarea.editar=false"></textarea>
+                        </div>
                     </div>
+
+
+                    <!--<p class="list-group-item-text">
+                      <span *ngFor="let tag of tarea.tags">{{tag}} | </span>
+                    </p>-->
+
                 </div>
-
-
-                <!--<p class="list-group-item-text">
-                  <span *ngFor="let tag of tarea.tags">{{tag}} | </span>
-                </p>-->
-
             </div>
         </div>
     </div>

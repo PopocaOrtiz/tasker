@@ -58,7 +58,6 @@ export class AppComponent {
                         equalTo: 'inbox'
                     }
                 });
-                console.log(user);
             }
             else {
                 // user not logged in
@@ -100,10 +99,10 @@ export class AppComponent {
             estatus : estatus
         };
 
-        tarea.estatus = estatus;
+        // tarea.estatus = estatus;
 
         if (estatus == 'completa') {
-            tarea.fechaCompletada = "Hoy";
+            // tarea.fechaCompletada = "Hoy";
             nuevaInfo.fechaCompletada = "Hoy";
         }
 
@@ -134,6 +133,12 @@ export class AppComponent {
             carpeta:carpeta
         };
         this.tareas.update(tarea.$key,actualizar);
-        tarea.carpeta = carpeta;
+        // tarea.carpeta = carpeta;
+    }
+
+    eliminarTarea(tarea : ITarea){
+        if(confirm("Eliminar tarea?")){
+            this.tareas.remove(tarea.$key);
+        }
     }
 }
