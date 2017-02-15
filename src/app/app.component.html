@@ -1,25 +1,43 @@
-<div class="container">
+<div class="container" (window:keydown)="hotKey($event)" (window:keyup)="hotKey($event)">
     <div class="row">
-        <div class="col-md-12">
-            <div class="pull-right" style="margin: 30px 0px 0px 10px;">
+
+        <div class="col-md-6 col-md-offset-2">
+            <h1>Tasker</h1>
+        </div>
+        <div class="col-md-4 text-right">
+            <div style="padding: 30px 0px 0px 10px;">
                 <strong class="text-primary cp" (click)="login()" *ngIf="!user.google">Login</strong>
                 <strong *ngIf="user.google">
                     {{user.google.displayName}}(<span class="text-primary cp" (click)="logout()">Salir</span>)
                 </strong>
             </div>
-            <h1>
-                Tasker
-            </h1>
-            <hr>
         </div>
+        <div class="clearfix"></div>
+        <hr>
+
         <div class="col-md-2 text-right" id="menu">
-            <nav class="bs-docs-sidebar hidden-print hidden-sm hidden-xs affix-top" style="margin-top: 55px;border-bottom: 1px solid silver;">
+            <div class="dropdown">
+                <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    {{proyectoSeleccionado.nombre ? proyectoSeleccionado.nombre : 'Proyecto'}}
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                    <li *ngFor="let proyecto of proyectos | async" (click)="seleccionarProyecto(proyecto)">
+                        <a href="#">
+                            {{proyecto.nombre}}
+                        </a>
+                    </li>
+                    <!--<li role="separator" class="divider"></li>-->
+                </ul>
+            </div>
+            <br>
+            <nav class="bs-docs-sidebar hidden-print hidden-sm hidden-xs affix-top" style="border-bottom: 1px solid silver;">
                 <ul class="nav bs-docs-sidenav">
-                    <li [ngClass]="carpetaSeleccionada == 'inbox' ? 'active' : ''" (click)="verCarpeta('inbox')">
+                    <li [ngClass]="opcionSeleccionada == 'inbox' ? 'active' : ''" (click)="verOpcion('inbox')">
                         <!--<span class="badge pull-right" style="margin-top: 12px;">4</span>-->
                         <a href="#inbox">Inbox</a>
                     </li>
-                    <li [ngClass]="carpetaSeleccionada == 'todas' ? 'active' : ''" (click)="verCarpeta('todas')">
+                    <li [ngClass]="opcionSeleccionada == 'todas' ? 'active' : ''" (click)="verOpcion('todas')">
                         <!--<span class="badge pull-right" style="margin-top: 12px;">10</span>-->
                         <a href="#todas">Todas</a>
                     </li>
@@ -27,32 +45,69 @@
             </nav>
             <nav class="bs-docs-sidebar hidden-print hidden-sm hidden-xs affix-top">
                 <ul class="nav bs-docs-sidenav">
-                    <li class="">
+                    <li [ngClass]="opcionSeleccionada == 'personas' ? 'active' : ''" (click)="verOpcion('personas')">
                         <a href="#personas">Personas</a>
+                    </li>
+                    <li [ngClass]="opcionSeleccionada == 'proyectos' ? 'active' : ''" (click)="verOpcion('proyectos')">
+                        <a href="#personas">Proyectos</a>
+                    </li>
+                    <li [ngClass]="opcionSeleccionada == 'etiquetas' ? 'active' : ''" (click)="verOpcion('etiquetas')">
+                        <a href="#personas">Etiquetas</a>
                     </li>
                 </ul>
             </nav>
         </div>
-        <div class="col-md-10">
-            <div class="input-group">
-                <input type="text" class="form-control" [(ngModel)]="palabraBuscar" (keyup.enter)="nuevaTarea()">
-                <span class="input-group-addon btn btn-info" id="basic-addon2">Buscar</span>
-            </div>
+        <div class="col-md-10" *ngIf="['inbox','todas'].indexOf(opcionSeleccionada)!=-1">
+            <input type="text" class="form-control" [(ngModel)]="palabraBuscar" (keyup.enter)="nuevaTarea()">
             <br>
             <div class="list-group">
-                <div *ngFor="let tarea of tareas | async | filtroListado:palabraBuscar"
+                <div *ngFor="let tarea of tareas | async | filtroListado:palabraBuscar | filtroProyecto:proyectoSeleccionado.nombre "
                      href="#" class="list-group-item">
-                    <div class="pull-right">
+                    <div class="pull-right _hoverDisplayInline">
+                        <span style="position: relative">
+                            <button class="btn btn-default dropdown-toggle btn-xs"
+                                    type="button"
+                                    data-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="true"
+                                    *ngIf="!teclaControlActivada">
+                                {{tarea.solicita ? tarea.solicita : 'Solicita'}}
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                                <li *ngFor="let persona of personas | async" (click)="actualizarPersonaSolicitaTarea(tarea,persona)">
+                                    <a href="#">{{persona.nombre}}</a>
+                                </li>
+                            </ul>
+                        </span>
+                        <span style="position: relative">
+                            <button class="btn btn-default dropdown-toggle btn-xs"
+                                    type="button"
+                                    data-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="true"
+                                    *ngIf="!teclaControlActivada">
+                                {{tarea.persona ? tarea.persona : 'Asignar'}}
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                                <li *ngFor="let persona of personas | async" (click)="seleccionarPersonaTarea(tarea,persona)">
+                                    <a href="#">{{persona.nombre}}</a>
+                                </li>
+                            </ul>
+                        </span>
+
                         <button class="btn btn-xs btn-danger"
-                                (click)="eliminarTarea(tarea)">Eliminar</button>
+                                (click)="eliminarTarea(tarea)"
+                                *ngIf="teclaControlActivada">E</button>
                         <button class="btn btn-xs btn-info"
                                 (click)="cambiarCarpeta('archivada',tarea)"
-                                *ngIf="tarea.carpeta!='archivada'">Archivar</button>
+                                *ngIf="tarea.carpeta!='archivada' && teclaControlActivada">A</button>
                         <button class="btn btn-xs btn-warning"
                                 (click)="cambiarCarpeta('inbox',tarea)"
-                                *ngIf="tarea.carpeta=='archivada'">Pasar a Inbox</button>
+                                *ngIf="tarea.carpeta=='archivada' && teclaControlActivada">Pasar a Inbox</button>
                     </div>
-
+                    <span>{{tarea.fechaCreada}}</span>
                     <div class="btn-group" role="group" aria-label="...">
                         <button type="button"
                                 class="btn btn-xs"
@@ -81,7 +136,7 @@
 
                     <div *ngIf="tarea.verContenido" style="padding-left: 74px;">
                         <div *ngIf="!tarea.editar">
-                            <span [innerHTML]="tarea.contenido" (click)="tarea.editar = true"></span>
+                            <span [innerHTML]="tarea.contenido" (click)="tarea.editar = true" style="white-space: pre-wrap;"></span>
                         </div>
                         <div *ngIf="tarea.editar">
                         <textarea class="form-control" [(ngModel)]="tarea.contenido"
@@ -89,45 +144,55 @@
                                   (blur)="tarea.editar=false"></textarea>
                         </div>
                     </div>
-
-
                     <!--<p class="list-group-item-text">
                       <span *ngFor="let tag of tarea.tags">{{tag}} | </span>
                     </p>-->
+                </div>
+            </div>
+            <div class="text-center text-primary">
+                <strong class="cp">Copiar tareas completadas de hoy</strong>
+            </div>
+            <br>
+        </div>
+        <div class="col-md-10" *ngIf="opcionSeleccionada=='personas'">
+            <div class="input-group">
+                <input type="text" class="form-control" [(ngModel)]="palabraBuscarPersona" >
+                <span class="input-group-addon btn btn-info" (click)="nuevaPersona()">Nueva persona</span>
+            </div>
+            <br>
 
+            <div class="list-group">
+                <div *ngFor="let persona of personas | async" href="#" class="list-group-item">
+                    <div class="pull-right">
+                        <button class="btn btn-xs btn-danger" (click)="eliminarPersona(persona)">
+                            Eliminar
+                        </button>
+                    </div>
+                    <strong class="list-group-item-heading">
+                        {{persona.nombre}}
+                    </strong>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-10" *ngIf="opcionSeleccionada=='proyectos'">
+            <div class="input-group">
+                <input type="text" class="form-control" [(ngModel)]="palabraBuscarProyecto" >
+                <span class="input-group-addon btn btn-info" (click)="nuevoProyecto()">Nuevo proyecto</span>
+            </div>
+            <br>
+
+            <div class="list-group">
+                <div *ngFor="let proyecto of proyectos | async" href="#" class="list-group-item">
+                    <div class="pull-right">
+                        <button class="btn btn-xs btn-danger" (click)="eliminarProyecto(proyecto)">
+                            Eliminar
+                        </button>
+                    </div>
+                    <strong class="list-group-item-heading">
+                        {{proyecto.nombre}}
+                    </strong>
                 </div>
             </div>
         </div>
     </div>
-
-    <!--<div class="col-md-6">
-      <div class="panel panel-info" *ngIf="tareaSeleccionada">
-        <div class="panel-heading">
-          <div class="btn-group pull-right" role="group" aria-label="...">
-            <button type="button" class="btn btn-danger btn-xs" (click)="cambiarEstatus('cancelada')">Cancelada</button>
-            <button type="button" class="btn btn-warning btn-xs" (click)="cambiarEstatus('pendiente')">Pendiente</button>
-            <button type="button" class="btn btn-success btn-xs" (click)="cambiarEstatus('completa')">Completada</button>
-          </div>
-          <h3 class="panel-title">
-            <strong>{{tareaSeleccionada.fecha}}</strong>
-            | <span>{{tareaSeleccionada.estatus}}</span>
-          </h3>
-        </div>
-        <div class="panel-body">
-
-          {{tareaSeleccionada.titulo}}
-          <br>
-          <br>
-          <textarea [(ngModel)]="tareaSeleccionada.contenido"
-                    (change)="actualizarTareaSeleccionada()"
-                    class="form-control"
-                    style="border: none;padding: 0;" >
-          </textarea>
-          <br>
-          <span>{{tareaSeleccionada.estatus}}</span>
-          <br>
-          <span *ngFor="let tag of tareaSeleccionada.tags">{{tag}} | </span>
-        </div>
-      </div>
-    </div>-->
 </div>

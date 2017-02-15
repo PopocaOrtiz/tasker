@@ -6,3 +6,10 @@
     color: #563d7c;
     border-right: 2px solid #563d7c;
 }
+
+.list-group-item .hoverDisplayInline{
+    display: none;
+}
+.list-group-item:Hover .hoverDisplayInline{
+    display: inline;
+}

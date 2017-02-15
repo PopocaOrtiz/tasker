@@ -3,6 +3,7 @@ import {NgModule} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {HttpModule} from '@angular/http';
 import { AngularFireModule } from 'angularfire2';
+import {HotkeyModule} from 'angular2-hotkeys';
 
 // Must export the config
 export const firebaseConfig = {
@@ -15,17 +16,19 @@ export const firebaseConfig = {
 
 import {AppComponent} from './app.component';
 
-import {FiltroListadoPipe} from './app.component'
+import {FiltroListadoPipe,FiltroProyectoPipe} from './app.component'
 @NgModule({
     declarations: [
         AppComponent,
-        FiltroListadoPipe
+        FiltroListadoPipe,
+        FiltroProyectoPipe
     ],
     imports: [
         BrowserModule,
         FormsModule,
         HttpModule,
-        AngularFireModule.initializeApp(firebaseConfig)
+        AngularFireModule.initializeApp(firebaseConfig),
+        HotkeyModule.forRoot()
     ],
     providers: [],
     bootstrap: [AppComponent]

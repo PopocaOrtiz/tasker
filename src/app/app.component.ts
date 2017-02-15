@@ -1,5 +1,7 @@
 import {Component, Pipe, Injectable, PipeTransform} from '@angular/core';
 import {AngularFire, FirebaseListObservable, AuthProviders, AuthMethods} from 'angularfire2'
+import { HotkeysService, Hotkey } from 'angular2-hotkeys';
+
 type estatusTarea = 'pendiente' | 'completa' | 'cancelada' | 'espera';
 
 export interface ITarea {
@@ -12,6 +14,17 @@ export interface ITarea {
     fechaCompletada ?: string
     verContenido ?: boolean
     carpeta : string
+    persona : string
+}
+
+export interface IPersona {
+    $key ?: any
+    nombre: string
+}
+
+export interface IProyecto {
+    $key ?: any
+    nombre: string
 }
 
 @Pipe({
@@ -27,8 +40,28 @@ export class FiltroListadoPipe implements PipeTransform {
         return items.filter(item => {
             if (!palabra)
                 return true;
-            return item.titulo.indexOf(palabra) !== -1 ||
-                item.contenido.indexOf(palabra) !== -1;
+            return item.titulo.toLowerCase().indexOf(palabra) !== -1 ||
+                item.contenido.toLowerCase().indexOf(palabra) !== -1;
+        });
+    }
+}
+
+@Pipe({
+    name: 'filtroProyecto',
+    pure: false
+})
+@Injectable()
+export class FiltroProyectoPipe implements PipeTransform {
+    transform(items: any[], proyecto: string): any {
+        if(items==null){
+            return null;
+        }
+        return items.filter(item => {
+
+            if (!proyecto)
+                return true;
+
+            return item.proyecto.indexOf(proyecto) !== -1;
         });
     }
 }
@@ -41,19 +74,25 @@ export class FiltroListadoPipe implements PipeTransform {
 export class AppComponent {
 
     tareas: FirebaseListObservable<ITarea[]>;
+    personas: FirebaseListObservable<IPersona[]>;
+    proyectos: FirebaseListObservable<IProyecto[]>;
     palabraBuscar : string;
+    palabraBuscarPersona : string;
+    palabraBuscarProyecto : string;
     user = {};
 
     tareaSeleccionada: ITarea;
-    carpetaSeleccionada : string;
+    opcionSeleccionada : string;
+    proyectoSeleccionado : IProyecto = {
+        nombre : ''
+    };
 
-    constructor(private af: AngularFire) {
-
+    constructor(private af: AngularFire,private hotkeysService: HotkeysService) {
         this.af.auth.subscribe(user => {
-            if(user) {
+            if (user) {
                 // user logged in
                 this.user = user;
-                this.tareas = this.af.database.list("/tareas",{
+                this.tareas = this.af.database.list("/tareas", {
                     query: {
                         orderByChild: 'carpeta',
                         equalTo: 'inbox'
@@ -65,8 +104,28 @@ export class AppComponent {
                 this.user = {};
             }
         });
+        this.opcionSeleccionada = "inbox";
 
-        this.carpetaSeleccionada = "inbox";
+        this.personas = this.af.database.list("/personas");
+        this.proyectos = this.af.database.list("/proyectos");
+
+        this.hotkeysService.add(new Hotkey('meta', (event: KeyboardEvent): boolean => {
+            console.log('Typed hotkey',event);
+            return false; // Prevent bubbling
+        }));
+    }
+
+    teclaControlActivada = false;
+
+    hotKey(event){
+        console.log("Key",event);
+        if (event.keyCode == 17){
+            if (event.type=='keydown') {
+                this.teclaControlActivada = true;
+            } else if (event.type=='keyup') {
+                this.teclaControlActivada = false;
+            }
+        }
     }
 
     login() {
@@ -81,12 +140,26 @@ export class AppComponent {
     }
 
     nuevaTarea() {
+
+        if(!this.proyectoSeleccionado.nombre.length){
+            alert("Selecciona un proyecto");
+            return;
+        }
+
+        let f = new Date();
+        let fecha = "";
+        fecha += f.getFullYear() + "-";
+        fecha += f.getMonth() + "-";
+        fecha += f.getDay();
+
         this.tareas.push({
             fecha: 'hoy',
             titulo: this.palabraBuscar,
+            fechaCreada : fecha,
             contenido: "Contenido de la tarea",
             estatus: "pendiente",
             carpeta : "inbox",
+            proyecto : this.proyectoSeleccionado.nombre,
             tags: []
         });
         this.palabraBuscar = "";
@@ -106,9 +179,30 @@ export class AppComponent {
 
         if (estatus == 'completa') {
             // tarea.fechaCompletada = "Hoy";
-            nuevaInfo.fechaCompletada = "Hoy";
+            //nuevaInfo.fechaCompletada = "Hoy";
+
+            let f = new Date();
+            let fecha = "";
+            fecha += f.getFullYear() + " ";
+            fecha += f.getMonth() + " ";
+            fecha += f.getDay();
+
+            nuevaInfo.fechaCompletada = fecha;
         }
 
+        this.tareas.update(tarea.$key,nuevaInfo);
+    }
+
+    seleccionarPersonaTarea(tarea : ITarea, persona : IPersona){
+        let nuevaInfo : any = {
+            persona : persona.nombre
+        };
+        this.tareas.update(tarea.$key,nuevaInfo);
+    }
+    actualizarPersonaSolicitaTarea(tarea : ITarea, persona : IPersona){
+        let nuevaInfo : any = {
+            solicita : persona.nombre
+        };
         this.tareas.update(tarea.$key,nuevaInfo);
     }
 
@@ -138,18 +232,24 @@ export class AppComponent {
         this.tareas.update(tarea.$key,actualizar);
         // tarea.carpeta = carpeta;
     }
-    verCarpeta(carpeta : string){
-        if (carpeta=='inbox') {
-            this.carpetaSeleccionada = 'inbox';
-            this.tareas = this.af.database.list("/tareas",{
-                query: {
-                    orderByChild: 'carpeta',
-                    equalTo: 'inbox'
-                }
-            });
-        } else {
-            this.carpetaSeleccionada = 'todas';
-            this.tareas = this.af.database.list("/tareas");
+
+    verOpcion(carpeta : string){
+        this.opcionSeleccionada = carpeta;
+        switch (carpeta) {
+            case 'inbox':
+                this.tareas = this.af.database.list("/tareas",{
+                    query: {
+                        orderByChild: 'carpeta',
+                        equalTo: 'inbox'
+                    }
+                });
+                break;
+            case 'todas':
+                this.tareas = this.af.database.list("/tareas");
+                break;
+            case 'personas':
+
+                break
         }
     }
 
@@ -157,5 +257,27 @@ export class AppComponent {
         if(confirm("Eliminar tarea?")){
             this.tareas.remove(tarea.$key);
         }
+    }
+
+    /** personas **/
+    nuevaPersona(){
+        this.personas.push({
+            nombre : this.palabraBuscarPersona
+        });
+        console.log("Nueva persona: " , this.palabraBuscarPersona);
+        this.palabraBuscarPersona = "";
+    }
+
+    /** proyectos **/
+    nuevoProyecto(){
+        this.proyectos.push({
+            nombre : this.palabraBuscarProyecto
+        });
+        console.log("Nuevo proyecto: " , this.palabraBuscarProyecto);
+        this.palabraBuscarProyecto = "";
+    }
+
+    seleccionarProyecto(proyecto : IProyecto){
+        this.proyectoSeleccionado = proyecto;
     }
 }
