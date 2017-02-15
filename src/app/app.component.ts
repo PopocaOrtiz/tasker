@@ -1,6 +1,6 @@
 import {Component, Pipe, Injectable, PipeTransform} from '@angular/core';
 import {AngularFire, FirebaseListObservable, AuthProviders, AuthMethods} from 'angularfire2'
-import { HotkeysService, Hotkey } from 'angular2-hotkeys';
+// import { HotkeysService, Hotkey } from 'angular2-hotkeys';
 
 type estatusTarea = 'pendiente' | 'completa' | 'cancelada' | 'espera';
 
@@ -87,7 +87,9 @@ export class AppComponent {
         nombre : ''
     };
 
-    constructor(private af: AngularFire,private hotkeysService: HotkeysService) {
+    //,private hotkeysService: HotkeysService
+
+    constructor(private af: AngularFire) {
         this.af.auth.subscribe(user => {
             if (user) {
                 // user logged in
@@ -109,10 +111,10 @@ export class AppComponent {
         this.personas = this.af.database.list("/personas");
         this.proyectos = this.af.database.list("/proyectos");
 
-        this.hotkeysService.add(new Hotkey('meta', (event: KeyboardEvent): boolean => {
+        /*this.hotkeysService.add(new Hotkey('meta', (event: KeyboardEvent): boolean => {
             console.log('Typed hotkey',event);
             return false; // Prevent bubbling
-        }));
+        }));*/
     }
 
     teclaControlActivada = false;

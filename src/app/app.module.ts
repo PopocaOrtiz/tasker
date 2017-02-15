@@ -3,7 +3,7 @@ import {NgModule} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {HttpModule} from '@angular/http';
 import { AngularFireModule } from 'angularfire2';
-import {HotkeyModule} from 'angular2-hotkeys';
+/*import {HotkeyModule} from 'angular2-hotkeys';*/
 
 // Must export the config
 export const firebaseConfig = {
@@ -28,7 +28,7 @@ import {FiltroListadoPipe,FiltroProyectoPipe} from './app.component'
         FormsModule,
         HttpModule,
         AngularFireModule.initializeApp(firebaseConfig),
-        HotkeyModule.forRoot()
+        //HotkeyModule.forRoot()
     ],
     providers: [],
     bootstrap: [AppComponent]
