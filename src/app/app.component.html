@@ -1,44 +1,28 @@
-<div class="container" (window:keydown)="hotKey($event)" (window:keyup)="hotKey($event)">
-    <div class="row">
-
-        <div class="col-md-6 col-md-offset-2">
-            <h1>Tasker</h1>
-        </div>
-        <div class="col-md-4 text-right">
-            <div style="padding: 30px 0px 0px 10px;">
-                <strong class="text-primary cp" (click)="login()" *ngIf="!user.google">Login</strong>
-                <strong *ngIf="user.google">
-                    {{user.google.displayName}}(<span class="text-primary cp" (click)="logout()">Salir</span>)
-                </strong>
-            </div>
-        </div>
-        <div class="clearfix"></div>
-        <hr>
-
-        <div class="col-md-2 text-right" id="menu">
-            <div class="dropdown">
+<div id="wrapper" [ngClass]="verMenu ? '' : 'toggled'" (window:keydown)="hotKey($event)" (window:keyup)="hotKey($event)">
+    <!-- Sidebar -->
+    <div id="sidebar-wrapper">
+        <div class="text-right" id="menu">
+            <div class="dropdown" style="position: relative">
                 <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    {{proyectoSeleccionado.nombre ? proyectoSeleccionado.nombre : 'Proyecto'}}
+                    {{proyectoSeleccionado.nombre ? proyectoSeleccionado.nombre : 'Todos'}}
                     <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-                    <li *ngFor="let proyecto of proyectos | async" (click)="seleccionarProyecto(proyecto)">
-                        <a href="#">
-                            {{proyecto.nombre}}
-                        </a>
+                    <li (click)="seleccionarProyecto(null)">
+                        <a href="#">Todos</a>
                     </li>
-                    <!--<li role="separator" class="divider"></li>-->
+                    <li *ngFor="let proyecto of proyectos | async" (click)="seleccionarProyecto(proyecto)">
+                        <a href="#">{{proyecto.nombre}}</a>
+                    </li>
                 </ul>
             </div>
             <br>
             <nav class="bs-docs-sidebar hidden-print hidden-sm hidden-xs affix-top" style="border-bottom: 1px solid silver;">
                 <ul class="nav bs-docs-sidenav">
                     <li [ngClass]="opcionSeleccionada == 'inbox' ? 'active' : ''" (click)="verOpcion('inbox')">
-                        <!--<span class="badge pull-right" style="margin-top: 12px;">4</span>-->
                         <a href="#inbox">Inbox</a>
                     </li>
                     <li [ngClass]="opcionSeleccionada == 'todas' ? 'active' : ''" (click)="verOpcion('todas')">
-                        <!--<span class="badge pull-right" style="margin-top: 12px;">10</span>-->
                         <a href="#todas">Todas</a>
                     </li>
                 </ul>
@@ -57,142 +41,168 @@
                 </ul>
             </nav>
         </div>
-        <div class="col-md-10" *ngIf="['inbox','todas'].indexOf(opcionSeleccionada)!=-1">
-            <input type="text" class="form-control" [(ngModel)]="palabraBuscar" (keyup.enter)="nuevaTarea()">
-            <br>
-            <div class="list-group">
-                <div *ngFor="let tarea of tareas | async | filtroListado:palabraBuscar | filtroProyecto:proyectoSeleccionado.nombre "
-                     href="#" class="list-group-item">
-                    <div class="pull-right _hoverDisplayInline">
-                        <span style="position: relative">
-                            <button class="btn btn-default dropdown-toggle btn-xs"
-                                    type="button"
-                                    data-toggle="dropdown"
-                                    aria-haspopup="true"
-                                    aria-expanded="true"
-                                    *ngIf="!teclaControlActivada">
-                                {{tarea.solicita ? tarea.solicita : 'Solicita'}}
-                                <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-                                <li *ngFor="let persona of personas | async" (click)="actualizarPersonaSolicitaTarea(tarea,persona)">
-                                    <a href="#">{{persona.nombre}}</a>
-                                </li>
-                            </ul>
-                        </span>
-                        <span style="position: relative">
-                            <button class="btn btn-default dropdown-toggle btn-xs"
-                                    type="button"
-                                    data-toggle="dropdown"
-                                    aria-haspopup="true"
-                                    aria-expanded="true"
-                                    *ngIf="!teclaControlActivada">
-                                {{tarea.persona ? tarea.persona : 'Asignar'}}
-                                <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
-                                <li *ngFor="let persona of personas | async" (click)="seleccionarPersonaTarea(tarea,persona)">
-                                    <a href="#">{{persona.nombre}}</a>
-                                </li>
-                            </ul>
-                        </span>
-
-                        <button class="btn btn-xs btn-danger"
-                                (click)="eliminarTarea(tarea)"
-                                *ngIf="teclaControlActivada">E</button>
-                        <button class="btn btn-xs btn-info"
-                                (click)="cambiarCarpeta('archivada',tarea)"
-                                *ngIf="tarea.carpeta!='archivada' && teclaControlActivada">A</button>
-                        <button class="btn btn-xs btn-warning"
-                                (click)="cambiarCarpeta('inbox',tarea)"
-                                *ngIf="tarea.carpeta=='archivada' && teclaControlActivada">Pasar a Inbox</button>
-                    </div>
-                    <span>{{tarea.fechaCreada}}</span>
-                    <div class="btn-group" role="group" aria-label="...">
-                        <button type="button"
-                                class="btn btn-xs"
-                                [ngClass]="tarea.estatus =='cancelada' ? 'btn-danger' : '' "
-                                (click)="cambiarEstatus('cancelada',tarea)">
-                            <i class="glyphicon glyphicon-remove"></i>
-                        </button>
-                        <button type="button"
-                                class="btn btn-xs"
-                                [ngClass]="tarea.estatus =='pendiente' ? 'btn-warning' : '' "
-                                (click)="cambiarEstatus('pendiente',tarea)">
-                            <i class="glyphicon glyphicon-time"></i>
-                        </button>
-                        <button type="button"
-                                class="btn btn-xs"
-                                [ngClass]="tarea.estatus =='completada' ? 'btn-success' : '' "
-                                (click)="cambiarEstatus('completada',tarea)">
-                            <i class="glyphicon glyphicon-ok"></i>
-                        </button>
-                    </div>
-
-                    <strong class="list-group-item-heading"
-                            (click)="verContenido(tarea)">
-                        {{tarea.titulo}}
-                    </strong>
-
-                    <div *ngIf="tarea.verContenido" style="padding-left: 74px;">
-                        <div *ngIf="!tarea.editar">
-                            <span [innerHTML]="tarea.contenido" (click)="tarea.editar = true" style="white-space: pre-wrap;"></span>
-                        </div>
-                        <div *ngIf="tarea.editar">
-                        <textarea class="form-control" [(ngModel)]="tarea.contenido"
-                                  (change)="tarea.editar = false;actualizarContenido(tarea)"
-                                  (blur)="tarea.editar=false"></textarea>
-                        </div>
-                    </div>
-                    <!--<p class="list-group-item-text">
-                      <span *ngFor="let tag of tarea.tags">{{tag}} | </span>
-                    </p>-->
+    </div>
+    <!-- /#sidebar-wrapper -->
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6">
+                    <h1 (click)="toggleSidebar()">Tasker</h1>
                 </div>
-            </div>
-            <div class="text-center text-primary">
-                <strong class="cp">Copiar tareas completadas de hoy</strong>
-            </div>
-            <br>
-        </div>
-        <div class="col-md-10" *ngIf="opcionSeleccionada=='personas'">
-            <div class="input-group">
-                <input type="text" class="form-control" [(ngModel)]="palabraBuscarPersona" >
-                <span class="input-group-addon btn btn-info" (click)="nuevaPersona()">Nueva persona</span>
-            </div>
-            <br>
-
-            <div class="list-group">
-                <div *ngFor="let persona of personas | async" href="#" class="list-group-item">
-                    <div class="pull-right">
-                        <button class="btn btn-xs btn-danger" (click)="eliminarPersona(persona)">
-                            Eliminar
-                        </button>
+                <div class="col-md-6 text-right">
+                    <div style="padding: 30px 0px 0px 10px;">
+                        <strong class="text-primary cp" (click)="login()" *ngIf="!user.google">Login</strong>
+                        <strong *ngIf="user.google">
+                            {{user.google.displayName}}(<span class="text-primary cp" (click)="logout()">Salir</span>)
+                        </strong>
                     </div>
-                    <strong class="list-group-item-heading">
-                        {{persona.nombre}}
-                    </strong>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-10" *ngIf="opcionSeleccionada=='proyectos'">
-            <div class="input-group">
-                <input type="text" class="form-control" [(ngModel)]="palabraBuscarProyecto" >
-                <span class="input-group-addon btn btn-info" (click)="nuevoProyecto()">Nuevo proyecto</span>
-            </div>
-            <br>
-
-            <div class="list-group">
-                <div *ngFor="let proyecto of proyectos | async" href="#" class="list-group-item">
-                    <div class="pull-right">
-                        <button class="btn btn-xs btn-danger" (click)="eliminarProyecto(proyecto)">
-                            Eliminar
-                        </button>
+                <hr>
+                <div class="col-md-12" *ngIf="['inbox','todas'].indexOf(opcionSeleccionada)!=-1">
+                    <input type="text" class="form-control" [(ngModel)]="palabraBuscar" (keyup.enter)="nuevaTarea()">
+                    <br>
+                    <div class="list-group">
+                        <div *ngFor="let tarea of tareas | async | filtroListado:palabraBuscar | filtroProyecto:proyectoSeleccionado.nombre "
+                             href="#" class="list-group-item">
+                            <div class="pull-right _hoverDisplayInline">
+                                <span style="position: relative">
+                                    <button class="btn btn-default dropdown-toggle btn-xs"
+                                            style="width: 80px"
+                                            type="button"
+                                            data-toggle="dropdown"
+                                            aria-haspopup="true"
+                                            aria-expanded="true"
+                                            *ngIf="!teclaControlActivada">
+                                        {{tarea.solicita ? tarea.solicita : 'Solicita'}}
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                                        <li *ngFor="let persona of personas | async" (click)="actualizarPersonaSolicitaTarea(tarea,persona)">
+                                            <a href="#">{{persona.nombre}}</a>
+                                        </li>
+                                    </ul>
+                                </span>
+                                <span style="position: relative">
+                                    <button class="btn dropdown-toggle btn-xs"
+                                            [ngClass]="tarea.color ? tarea.color : 'btn-default'"
+                                            type="button"
+                                            data-toggle="dropdown"
+                                            style="width: 80px"
+                                            aria-haspopup="true"
+                                            aria-expanded="true"
+                                            *ngIf="!teclaControlActivada">
+                                        {{tarea.persona ? tarea.persona : 'Asignar'}}
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                                        <li *ngFor="let persona of personas | async" (click)="seleccionarPersonaTarea(tarea,persona)">
+                                            <a href="#">{{persona.nombre}}</a>
+                                        </li>
+                                    </ul>
+                                </span>
+                                <button class="btn btn-xs btn-danger"
+                                        (click)="eliminarTarea(tarea)"
+                                        *ngIf="teclaControlActivada">Eliminar</button>
+                                <button class="btn btn-xs btn-info"
+                                        (click)="cambiarCarpeta('archivada',tarea)"
+                                        *ngIf="tarea.carpeta!='archivada' && teclaControlActivada">Archivar</button>
+                                <button class="btn btn-xs btn-warning"
+                                        (click)="cambiarCarpeta('inbox',tarea)"
+                                        *ngIf="tarea.carpeta=='archivada' && teclaControlActivada">Pasar a Inbox</button>
+                            </div>
+                            <span *ngIf="teclaControlActivada">{{tarea.fechaCreada}}</span>
+                            <span *ngIf="tarea.fechaCompletada">{{tarea.fechaCompletada}}</span>
+                            <div class="btn-group" role="group" aria-label="...">
+                                <button type="button"
+                                        class="btn btn-xs"
+                                        [ngClass]="tarea.estatus =='cancelada' ? 'btn-danger' : '' "
+                                        (click)="cambiarEstatus('cancelada',tarea)">
+                                    <i class="glyphicon glyphicon-remove"></i>
+                                </button>
+                                <button type="button"
+                                        class="btn btn-xs"
+                                        [ngClass]="tarea.estatus =='pendiente' ? 'btn-warning' : '' "
+                                        (click)="cambiarEstatus('pendiente',tarea)">
+                                    <i class="glyphicon glyphicon-time"></i>
+                                </button>
+                                <button type="button"
+                                        class="btn btn-xs"
+                                        [ngClass]="tarea.estatus =='completada' ? 'btn-success' : '' "
+                                        (click)="cambiarEstatus('completada',tarea)">
+                                    <i class="glyphicon glyphicon-ok"></i>
+                                </button>
+                            </div>
+                            <!--<strong class="list-group-item-heading red"
+                                    (dblclick)="verContenido(tarea)">
+                                {{tarea.titulo}}
+                            </strong>-->
+                            <strong class="list-group-item-heading"
+                                    (click)="verContenido(tarea)">
+                                {{tarea.contenido | separarTituloContenido:'titulo'}}
+                            </strong>
+                            <div *ngIf="tarea.verContenido" style="padding-left: 74px;">
+                                <div *ngIf="!tarea.editar">
+                                    <span [innerHTML]="tarea.contenido | separarTituloContenido:'contenido'" (dblclick)="tarea.editar = true" style="white-space: pre-wrap;"></span>
+                                </div>
+                                <div *ngIf="tarea.editar">
+                            <textarea class="form-control" [(ngModel)]="tarea.contenido"
+                                      (change)="tarea.editar = false;actualizarContenido(tarea)"
+                                      (blur)="tarea.editar=false"></textarea>
+                                </div>
+                            </div>
+                            <!--<p class="list-group-item-text">
+                              <span *ngFor="let tag of tarea.tags">{{tag}} | </span>
+                            </p>-->
+                        </div>
                     </div>
-                    <strong class="list-group-item-heading">
-                        {{proyecto.nombre}}
-                    </strong>
+                    <div class="text-center text-primary">
+                        <strong class="cp">Copiar tareas completadas de hoy</strong>
+                    </div>
+                    <br>
+                </div>
+                <div class="col-md-10" *ngIf="opcionSeleccionada=='personas'">
+                    <div class="input-group">
+                        <input type="text" class="form-control" [(ngModel)]="palabraBuscarPersona" >
+                        <span class="input-group-addon btn btn-info" (click)="nuevaPersona()">Nueva persona</span>
+                    </div>
+                    <br>
+
+                    <div class="list-group">
+                        <div *ngFor="let persona of personas | async" href="#" class="list-group-item">
+                            <div class="pull-right">
+                                <button class="btn btn-xs btn-danger" (click)="eliminarPersona(persona)">
+                                    Eliminar
+                                </button>
+                            </div>
+                            <strong class="list-group-item-heading">
+                                {{persona.nombre}}
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-10" *ngIf="opcionSeleccionada=='proyectos'">
+                    <div class="input-group">
+                        <input type="text" class="form-control" [(ngModel)]="palabraBuscarProyecto" >
+                        <span class="input-group-addon btn btn-info" (click)="nuevoProyecto()">Nuevo proyecto</span>
+                    </div>
+                    <br>
+
+                    <div class="list-group">
+                        <div *ngFor="let proyecto of proyectos | async" href="#" class="list-group-item">
+                            <div class="pull-right">
+                                <button class="btn btn-xs btn-danger" (click)="eliminarProyecto(proyecto)">
+                                    Eliminar
+                                </button>
+                            </div>
+                            <strong class="list-group-item-heading">
+                                {{proyecto.nombre}}
+                            </strong>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    <!-- /#page-content-wrapper -->
 </div>

@@ -14,14 +14,16 @@ export const firebaseConfig = {
     messagingSenderId: '433987010305'
 };
 
+
 import {AppComponent} from './app.component';
 
-import {FiltroListadoPipe,FiltroProyectoPipe} from './app.component'
+import {FiltroListadoPipe,FiltroProyectoPipe,SepararTituloContenidoPipe} from './app.component'
 @NgModule({
     declarations: [
         AppComponent,
         FiltroListadoPipe,
-        FiltroProyectoPipe
+        FiltroProyectoPipe,
+        SepararTituloContenidoPipe
     ],
     imports: [
         BrowserModule,

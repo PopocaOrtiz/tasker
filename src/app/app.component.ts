@@ -2,7 +2,7 @@ import {Component, Pipe, Injectable, PipeTransform} from '@angular/core';
 import {AngularFire, FirebaseListObservable, AuthProviders, AuthMethods} from 'angularfire2'
 // import { HotkeysService, Hotkey } from 'angular2-hotkeys';
 
-type estatusTarea = 'pendiente' | 'completa' | 'cancelada' | 'espera';
+type estatusTarea = 'pendiente' | 'completada' | 'cancelada' | 'espera';
 
 export interface ITarea {
     $key ?:any
@@ -20,6 +20,7 @@ export interface ITarea {
 export interface IPersona {
     $key ?: any
     nombre: string
+    color : string
 }
 
 export interface IProyecto {
@@ -66,6 +67,25 @@ export class FiltroProyectoPipe implements PipeTransform {
     }
 }
 
+@Pipe({
+    name: 'separarTituloContenido',
+    pure: false
+})
+@Injectable()
+export class SepararTituloContenidoPipe implements PipeTransform {
+    transform(contenido : string, separar : string): any {
+        let partesContenido : string[] = contenido.split("\n");
+        if (separar=='titulo') {
+            return partesContenido[0];
+        } else {
+            if(partesContenido.length>1){
+                partesContenido.shift();
+                return partesContenido.join("\n");
+            }
+        }
+    }
+}
+
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
@@ -87,8 +107,13 @@ export class AppComponent {
         nombre : ''
     };
 
+    verMenu : boolean = true;
+
     //,private hotkeysService: HotkeysService
 
+    toggleSidebar(){
+        this.verMenu = !this.verMenu;
+    }
     constructor(private af: AngularFire) {
         this.af.auth.subscribe(user => {
             if (user) {
@@ -179,7 +204,7 @@ export class AppComponent {
 
         // tarea.estatus = estatus;
 
-        if (estatus == 'completa') {
+        if (estatus == 'completada') {
             // tarea.fechaCompletada = "Hoy";
             //nuevaInfo.fechaCompletada = "Hoy";
 
@@ -197,7 +222,8 @@ export class AppComponent {
 
     seleccionarPersonaTarea(tarea : ITarea, persona : IPersona){
         let nuevaInfo : any = {
-            persona : persona.nombre
+            persona : persona.nombre,
+            color : persona.color
         };
         this.tareas.update(tarea.$key,nuevaInfo);
     }
@@ -210,8 +236,7 @@ export class AppComponent {
 
     actualizarContenido(tarea : ITarea){
         let nuevoContenido = {
-            contenido : tarea.contenido,
-            verContenido : true
+            contenido : tarea.contenido
         };
         this.tareas.update(tarea.$key,nuevoContenido);
     }
@@ -279,7 +304,13 @@ export class AppComponent {
         this.palabraBuscarProyecto = "";
     }
 
-    seleccionarProyecto(proyecto : IProyecto){
-        this.proyectoSeleccionado = proyecto;
+    seleccionarProyecto(proyecto : IProyecto = null){
+        if (proyecto) {
+            this.proyectoSeleccionado = proyecto;
+        } else {
+            this.proyectoSeleccionado = {
+                nombre : ''
+            };
+        }
     }
 }
