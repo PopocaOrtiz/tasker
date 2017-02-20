@@ -17,12 +17,13 @@ export const firebaseConfig = {
 
 import {AppComponent} from './app.component';
 
-import {FiltroListadoPipe,FiltroProyectoPipe,SepararTituloContenidoPipe} from './app.component'
+import {FiltroListadoPipe,SepararTituloContenidoPipe} from './app.component'
+import {OrdenarListadoPipe} from "./app.pipes";
 @NgModule({
     declarations: [
         AppComponent,
         FiltroListadoPipe,
-        FiltroProyectoPipe,
+        OrdenarListadoPipe,
         SepararTituloContenidoPipe
     ],
     imports: [

@@ -1,8 +1,8 @@
 import {Component, Pipe, Injectable, PipeTransform} from '@angular/core';
 import {AngularFire, FirebaseListObservable, AuthProviders, AuthMethods} from 'angularfire2'
+import {estatusTarea,IParametrosFiltrar} from "./app.interface";
+import {debug} from "util";
 // import { HotkeysService, Hotkey } from 'angular2-hotkeys';
-
-type estatusTarea = 'pendiente' | 'completada' | 'cancelada' | 'espera';
 
 export interface ITarea {
     $key ?:any
@@ -28,41 +28,45 @@ export interface IProyecto {
     nombre: string
 }
 
+export interface IParametrosOrdenacion {
+    estatus : estatusTarea,
+    persona : string
+}
 @Pipe({
     name: 'filtroListado',
     pure: false
 })
 @Injectable()
 export class FiltroListadoPipe implements PipeTransform {
-    transform(items: any[], palabra: string): any {
+    transform(items: any[], parametrosFiltar: IParametrosFiltrar): any {
+
         if(items==null){
             return null;
         }
+
         return items.filter(item => {
-            if (!palabra)
-                return true;
-            return item.titulo.toLowerCase().indexOf(palabra) !== -1 ||
-                item.contenido.toLowerCase().indexOf(palabra) !== -1;
-        });
-    }
-}
+            if (parametrosFiltar.estatus) {
+                if(item.estatus!=parametrosFiltar.estatus)
+                    return false;
+            }
 
-@Pipe({
-    name: 'filtroProyecto',
-    pure: false
-})
-@Injectable()
-export class FiltroProyectoPipe implements PipeTransform {
-    transform(items: any[], proyecto: string): any {
-        if(items==null){
-            return null;
-        }
-        return items.filter(item => {
+            if (parametrosFiltar.proyecto) {
+                if(item.proyecto!=parametrosFiltar.proyecto)
+                    return false;
+            }
 
-            if (!proyecto)
-                return true;
+            if (parametrosFiltar.persona) {
+                if(item.persona!=parametrosFiltar.persona)
+                    return false;
+            }
 
-            return item.proyecto.indexOf(proyecto) !== -1;
+            if (parametrosFiltar.palabra) {
+                if(item.contenido.toLowerCase().indexOf(parametrosFiltar.palabra) === -1)
+                    return false;
+            }
+
+            //no se aplico ningun filtro
+            return true;
         });
     }
 }
@@ -99,9 +103,9 @@ export class AppComponent {
     palabraBuscar : string;
     palabraBuscarPersona : string;
     palabraBuscarProyecto : string;
-    user = {};
+    user = null;
 
-    tareaSeleccionada: ITarea;
+    // tareaSeleccionada: ITarea;
     opcionSeleccionada : string;
     proyectoSeleccionado : IProyecto = {
         nombre : ''
@@ -109,32 +113,56 @@ export class AppComponent {
 
     verMenu : boolean = true;
 
+    /*parametrosOrdenacion : IParametrosOrdenacion = {
+        estatus : null,
+        persona : ""
+    };*/
+
+    parametrosFiltrar : IParametrosFiltrar = {
+        estatus : null,
+        palabra : null,
+        proyecto : null,
+        persona : null
+    };
+
     //,private hotkeysService: HotkeysService
 
     toggleSidebar(){
         this.verMenu = !this.verMenu;
     }
+
     constructor(private af: AngularFire) {
         this.af.auth.subscribe(user => {
             if (user) {
                 // user logged in
-                this.user = user;
+                let emailPermitidos = ['popoca.ortiz@gmail.com','fernando.p@gme.mx','erick@gme.mx'];
+                // no esta en los correos permitidos
+                if (user.google.email) {
+                    if (emailPermitidos.indexOf(user.google.email)==-1) {
+                        alert("No permitido");
+                        return;
+                    }
+                }
+
+
+                this.user = user.google;
+
                 this.tareas = this.af.database.list("/tareas", {
                     query: {
                         orderByChild: 'carpeta',
                         equalTo: 'inbox'
                     }
                 });
+                this.personas = this.af.database.list("/personas");
+                this.proyectos = this.af.database.list("/proyectos");
             }
             else {
                 // user not logged in
-                this.user = {};
+                this.user = null;
             }
         });
-        this.opcionSeleccionada = "inbox";
 
-        this.personas = this.af.database.list("/personas");
-        this.proyectos = this.af.database.list("/proyectos");
+        this.opcionSeleccionada = "inbox";
 
         /*this.hotkeysService.add(new Hotkey('meta', (event: KeyboardEvent): boolean => {
             console.log('Typed hotkey',event);
@@ -143,6 +171,21 @@ export class AppComponent {
     }
 
     teclaControlActivada = false;
+
+    //ordenacion
+    actualizarParametroFiltrar(actualizar : string, valor : string){
+        if(actualizar=='palabra')
+            this.parametrosFiltrar.palabra = this.palabraBuscar;
+        else if (actualizar=='estatus') {
+            //si ya lo tiene le quitamos el filtro
+            if(this.parametrosFiltrar.estatus == valor)
+                this.parametrosFiltrar.estatus = null;
+            else
+                this.parametrosFiltrar.estatus = valor;
+        } else if (actualizar == 'persona') {
+            this.parametrosFiltrar.persona = valor;
+        }
+    }
 
     hotKey(event){
         console.log("Key",event);
@@ -158,14 +201,42 @@ export class AppComponent {
     login() {
         this.af.auth.login({
             provider: AuthProviders.Google,
-            method: AuthMethods.Popup
+            method: AuthMethods.Popup,
+            scope : ['email']
         });
+    }
+
+    checkLogin(){
+        return this.user;
     }
 
     logout() {
         this.af.auth.logout();
+        this.tareas = null;
+        this.proyectos = null;
+        this.personas = null;
+        this.user = null;
     }
 
+    getFecha() : string {
+        let f = new Date();
+        let fecha = "";
+        fecha += f.getFullYear() + "-";
+
+        if (f.getMonth().toString().length==1) {
+            fecha += "0"+f.getMonth() + "-";
+        } else {
+            fecha += f.getMonth() + "-";
+        }
+
+        if (f.getDay().toString().length==1) {
+            fecha += "0"+f.getDay();
+        } else {
+            fecha += f.getDay();
+        }
+
+        return fecha;
+    }
     nuevaTarea() {
 
         if(!this.proyectoSeleccionado.nombre.length){
@@ -173,16 +244,10 @@ export class AppComponent {
             return;
         }
 
-        let f = new Date();
-        let fecha = "";
-        fecha += f.getFullYear() + "-";
-        fecha += f.getMonth() + "-";
-        fecha += f.getDay();
-
         this.tareas.push({
             fecha: 'hoy',
             titulo: this.palabraBuscar,
-            fechaCreada : fecha,
+            fechaCreada : this.getFecha(),
             contenido: "Contenido de la tarea",
             estatus: "pendiente",
             carpeta : "inbox",
@@ -192,29 +257,14 @@ export class AppComponent {
         this.palabraBuscar = "";
     }
 
-    /*seleccionarTarea(tarea: ITarea) {
-        this.tareaSeleccionada = tarea;
-    }*/
-
     cambiarEstatus(estatus: estatusTarea, tarea : ITarea) {
 
         let nuevaInfo : any = {
             estatus : estatus
         };
 
-        // tarea.estatus = estatus;
-
         if (estatus == 'completada') {
-            // tarea.fechaCompletada = "Hoy";
-            //nuevaInfo.fechaCompletada = "Hoy";
-
-            let f = new Date();
-            let fecha = "";
-            fecha += f.getFullYear() + " ";
-            fecha += f.getMonth() + " ";
-            fecha += f.getDay();
-
-            nuevaInfo.fechaCompletada = fecha;
+            nuevaInfo.fechaCompletada = this.getFecha();
         }
 
         this.tareas.update(tarea.$key,nuevaInfo);
@@ -227,6 +277,7 @@ export class AppComponent {
         };
         this.tareas.update(tarea.$key,nuevaInfo);
     }
+
     actualizarPersonaSolicitaTarea(tarea : ITarea, persona : IPersona){
         let nuevaInfo : any = {
             solicita : persona.nombre
@@ -264,15 +315,19 @@ export class AppComponent {
         this.opcionSeleccionada = carpeta;
         switch (carpeta) {
             case 'inbox':
-                this.tareas = this.af.database.list("/tareas",{
-                    query: {
-                        orderByChild: 'carpeta',
-                        equalTo: 'inbox'
-                    }
-                });
+                if (this.checkLogin()) {
+                    this.tareas = this.af.database.list("/tareas",{
+                        query: {
+                            orderByChild: 'carpeta',
+                            equalTo: 'inbox'
+                        }
+                    });
+                }
                 break;
             case 'todas':
-                this.tareas = this.af.database.list("/tareas");
+                if (this.checkLogin()) {
+                    this.tareas = this.af.database.list("/tareas");
+                }
                 break;
             case 'personas':
 
@@ -307,10 +362,28 @@ export class AppComponent {
     seleccionarProyecto(proyecto : IProyecto = null){
         if (proyecto) {
             this.proyectoSeleccionado = proyecto;
+            this.parametrosFiltrar.proyecto = proyecto.nombre;
         } else {
+            this.parametrosFiltrar.proyecto = null;
             this.proyectoSeleccionado = {
                 nombre : ''
             };
         }
     }
+
+    /**
+     * ordenacion
+     */
+
+    /*setParametroOrdenacion(campo : 'estatus'|'persona', valor : string){
+
+        //si el campo actual ya tiene activa la ordenacion
+        if(this.parametrosOrdenacion[campo]==valor){
+            //se la quitamos
+            this.parametrosOrdenacion[campo] = null;
+        } else {
+            //si no se la ponemos
+            this.parametrosOrdenacion[campo] = "";
+        }
+    }*/
 }

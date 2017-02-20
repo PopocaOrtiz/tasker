@@ -52,18 +52,61 @@
                 </div>
                 <div class="col-md-6 text-right">
                     <div style="padding: 30px 0px 0px 10px;">
-                        <strong class="text-primary cp" (click)="login()" *ngIf="!user.google">Login</strong>
-                        <strong *ngIf="user.google">
-                            {{user.google.displayName}}(<span class="text-primary cp" (click)="logout()">Salir</span>)
+                        <strong class="text-primary cp" (click)="login()" *ngIf="!user">Login</strong>
+                        <strong *ngIf="user">
+                            {{user.displayName}}(<span class="text-primary cp" (click)="logout()">Salir</span>)
                         </strong>
                     </div>
                 </div>
                 <hr>
                 <div class="col-md-12" *ngIf="['inbox','todas'].indexOf(opcionSeleccionada)!=-1">
-                    <input type="text" class="form-control" [(ngModel)]="palabraBuscar" (keyup.enter)="nuevaTarea()">
+                    <input type="text" class="form-control" [(ngModel)]="palabraBuscar" (keyup.enter)="nuevaTarea()" (keyup)="actualizarParametroFiltrar('palabra')">
                     <br>
                     <div class="list-group">
-                        <div *ngFor="let tarea of tareas | async | filtroListado:palabraBuscar | filtroProyecto:proyectoSeleccionado.nombre "
+                        <div class="list-group-item">
+                            <div class="pull-right">
+                                <span style="position: relative">
+                                    <button class="btn btn-default dropdown-toggle btn-xs"
+                                            style="width: 80px"
+                                            type="button"
+                                            data-toggle="dropdown"
+                                            aria-haspopup="true"
+                                            aria-expanded="true">
+                                        {{parametrosFiltrar.persona ? parametrosFiltrar.persona : 'Asignado'}}
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                                        <li (click)="actualizarParametroFiltrar('persona',null)">
+                                            <a href="#">Todos</a>
+                                        </li>
+                                        <li *ngFor="let persona of personas | async" (click)="actualizarParametroFiltrar('persona',persona.nombre)">
+                                            <a href="#">{{persona.nombre}}</a>
+                                        </li>
+                                    </ul>
+                                </span>
+                            </div>
+                            <div class="btn-group" role="group" aria-label="...">
+                                <button type="button"
+                                        class="btn btn-xs"
+                                        [ngClass]="parametrosFiltrar.estatus =='cancelada' ? 'btn-danger' : '' "
+                                        (click)="actualizarParametroFiltrar('estatus','cancelada')">
+                                    <i class="glyphicon glyphicon-remove"></i>
+                                </button>
+                                <button type="button"
+                                        class="btn btn-xs"
+                                        [ngClass]="parametrosFiltrar.estatus =='pendiente' ? 'btn-warning' : '' "
+                                        (click)="actualizarParametroFiltrar('estatus','pendiente')">
+                                    <i class="glyphicon glyphicon-time"></i>
+                                </button>
+                                <button type="button"
+                                        class="btn btn-xs"
+                                        [ngClass]="parametrosFiltrar.estatus =='completada' ? 'btn-success' : '' "
+                                        (click)="actualizarParametroFiltrar('estatus','completada')">
+                                    <i class="glyphicon glyphicon-ok"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div *ngFor="let tarea of tareas | async | filtroListado:parametrosFiltrar"
                              href="#" class="list-group-item">
                             <div class="pull-right _hoverDisplayInline">
                                 <span style="position: relative">
@@ -111,8 +154,10 @@
                                         (click)="cambiarCarpeta('inbox',tarea)"
                                         *ngIf="tarea.carpeta=='archivada' && teclaControlActivada">Pasar a Inbox</button>
                             </div>
-                            <span *ngIf="teclaControlActivada">{{tarea.fechaCreada}}</span>
-                            <span *ngIf="tarea.fechaCompletada">{{tarea.fechaCompletada}}</span>
+                            <div style="width: 130px;display: inline-block;" *ngIf="teclaControlActivada">
+                                <span>{{tarea.fechaCreada}}</span> |
+                                <span>{{tarea.fechaCompletada}}</span>
+                            </div>
                             <div class="btn-group" role="group" aria-label="...">
                                 <button type="button"
                                         class="btn btn-xs"
