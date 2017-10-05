@@ -1,2 +1,14 @@
 
 /*# sourceMappingURL=styles.3e11ef2da8d91b70dafe.bundle.map*/
+
+.btn-pink {
+    color: #2f2f2f;
+    background-color: #ffaade;
+    border-color: #ff8caf;
+}
+
+.btn-magenta {
+	color: #f0f0f0;
+    background-color: #c030ff;
+    border-color: #9500ff;
+}
